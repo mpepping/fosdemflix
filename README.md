@@ -1,6 +1,6 @@
 # fosdemflix
 
-A Netflix-like browser for [FOSDEM](https://fosdem.org) conference videos, covering 2020–2026.
+A Netflix-like browser for [FOSDEM](https://fosdem.org) conference videos: <https://fosdemflix.netlify.app>
 
 ## Setup
 
