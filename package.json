@@ -1,0 +1,21 @@
+{
+  "name": "fosdemflix",
+  "version": "1.0.0",
+  "description": "Netflix-like browser for FOSDEM conference videos",
+  "type": "module",
+  "scripts": {
+    "fetch-data": "tsx scripts/fetch-data.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0",
+    "minisearch": "^7.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}

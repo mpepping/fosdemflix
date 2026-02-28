@@ -1,0 +1,171 @@
+/* Search bar */
+.search-wrapper {
+  flex: 1;
+  max-width: 500px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.search-input {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 24px;
+  padding: 9px 16px 9px 38px;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: background var(--transition), border-color var(--transition);
+  appearance: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* Clear input button (native search clear) */
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E");
+  cursor: pointer;
+}
+
+/* Year filter pills */
+.year-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filter-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: rgba(255,255,255,0.14);
+  color: var(--text);
+}
+
+.filter-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Track dropdown */
+.track-filter-wrapper {
+  flex-shrink: 0;
+}
+
+.track-filter {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 6px 28px 6px 12px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  transition: background-color var(--transition), border-color var(--transition);
+  max-width: 200px;
+}
+
+.track-filter:hover,
+.track-filter:focus {
+  background-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.25);
+  color: var(--text);
+}
+
+.track-filter option {
+  background: #1f1f1f;
+  color: var(--text);
+}
+
+
+/* Shuffle button */
+.shuffle-btn {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 14px 0 10px;
+  gap: 6px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+
+.shuffle-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--text);
+}
+
+.shuffle-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-inner {
+    gap: 12px;
+  }
+
+  .search-wrapper {
+    max-width: none;
+  }
+
+  .filter-bar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .track-filter-wrapper {
+    width: 100%;
+  }
+
+  .track-filter {
+    max-width: 100%;
+    width: 100%;
+  }
+}

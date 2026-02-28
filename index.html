@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fosdemflix</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="/" class="logo">fosdemflix</a>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-input"
+            placeholder="Search talks, speakers, tracks…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <button id="shuffle-btn" class="shuffle-btn" title="Open a random talk">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 3 21 3 21 8"/>
+            <line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/>
+            <line x1="15" y1="15" x2="21" y2="21"/>
+          </svg>
+          Shuffle
+        </button>
+      </div>
+    </header>
+
+    <div class="filter-bar">
+      <div class="filter-bar-inner">
+        <div class="year-filters" id="year-filters">
+          <button class="filter-pill active" data-year="all">All Years</button>
+          <button class="filter-pill" data-year="2026">2026</button>
+          <button class="filter-pill" data-year="2025">2025</button>
+          <button class="filter-pill" data-year="2024">2024</button>
+          <button class="filter-pill" data-year="2023">2023</button>
+          <button class="filter-pill" data-year="2022">2022</button>
+          <button class="filter-pill" data-year="2021">2021</button>
+          <button class="filter-pill" data-year="2020">2020</button>
+        </div>
+        <div class="track-filter-wrapper">
+          <select id="track-filter" class="track-filter">
+            <option value="">All Tracks</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <main class="main-content">
+      <div class="results-header" id="results-header">
+        <span class="results-count" id="results-count"></span>
+        <button class="clear-filters" id="clear-filters" style="display:none">Clear filters</button>
+      </div>
+      <div class="video-grid" id="video-grid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading talks…</p>
+        </div>
+      </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-label="Video player">
+      <div class="modal-content" id="modal-content">
+        <button class="modal-close" id="modal-close" aria-label="Close video player">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <div class="modal-video-wrapper">
+          <video id="modal-video" controls preload="metadata">
+            Your browser does not support HTML5 video.
+          </video>
+        </div>
+        <div class="modal-info" id="modal-info"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
