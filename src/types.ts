@@ -19,4 +19,5 @@ export interface FilterState {
   year: number | 'all'
   track: string
   query: string
+  speaker: string
 }

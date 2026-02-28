@@ -83,6 +83,18 @@
   text-overflow: ellipsis;
 }
 
+.card-speakers .speaker-link {
+  color: var(--text-secondary);
+  font-size: inherit;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.card-speakers .speaker-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .card-abstract {
   font-size: 0.75rem;
   color: var(--text-muted);

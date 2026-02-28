@@ -52,10 +52,16 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;')
 }
 
+function renderSpeakers(speakers: string[]): string {
+  return speakers.slice(0, 3).map(s =>
+    `<button class="speaker-link" data-speaker="${escapeHtml(s)}">${escapeHtml(s)}</button>`
+  ).join(', ')
+}
+
 function renderCard(talk: Talk): string {
   const color = getTrackColor(talk.track)
   const speakers = talk.speakers.length
-    ? `<p class="card-speakers">${escapeHtml(talk.speakers.slice(0, 3).join(', '))}</p>`
+    ? `<p class="card-speakers">${renderSpeakers(talk.speakers)}</p>`
     : ''
   const abstract = talk.abstract
     ? `<p class="card-abstract">${escapeHtml(talk.abstract.slice(0, 140))}…</p>`
@@ -94,39 +100,46 @@ function renderGrid(talks: Talk[]): void {
   } else {
     grid.innerHTML = talks.map(renderCard).join('')
 
-    grid.querySelectorAll<HTMLElement>('.video-card').forEach(card => {
-      const handler = () => {
+    // Delegated click handler for cards and speaker links
+    grid.addEventListener('click', e => {
+      // Speaker link takes priority — don't open the player
+      const speakerBtn = (e.target as HTMLElement).closest<HTMLElement>('.speaker-link')
+      if (speakerBtn) {
+        setSpeaker(speakerBtn.dataset.speaker!)
+        return
+      }
+      const card = (e.target as HTMLElement).closest<HTMLElement>('.video-card')
+      if (card) {
         const talk = talkMap.get(card.dataset.id!)
         if (talk) openPlayer(talk)
       }
-      card.addEventListener('click', handler)
-      card.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handler()
-        }
-      })
-    })
+    }, { once: false })
 
-    // Arrow key navigation between cards
+    // Keyboard nav on cards
     grid.addEventListener('keydown', e => {
       const card = (e.target as HTMLElement).closest<HTMLElement>('.video-card')
       if (!card) return
 
-      const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
-      if (!keys.includes(e.key)) return
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        const talk = talkMap.get(card.dataset.id!)
+        if (talk) openPlayer(talk)
+        return
+      }
+
+      const arrowKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
+      if (!arrowKeys.includes(e.key)) return
       e.preventDefault()
 
       const cards = Array.from(grid.querySelectorAll<HTMLElement>('.video-card'))
       const idx = cards.indexOf(card)
       const cols = Math.max(1, Math.floor(grid.clientWidth / 260))
-
       const delta: Record<string, number> = {
         ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols, ArrowDown: cols,
       }
       const next = idx + delta[e.key]!
       if (next >= 0 && next < cards.length) cards[next].focus()
-    }, { capture: false })
+    })
   }
 
   countEl.textContent = `${talks.length.toLocaleString()} talk${talks.length === 1 ? '' : 's'}`
@@ -135,12 +148,45 @@ function renderGrid(talks: Talk[]): void {
 // Global state
 let allTalks: Talk[] = []
 const talkMap = new Map<string, Talk>()
-const filters: FilterState = { year: 'all', track: '', query: '' }
+const filters: FilterState = { year: 'all', track: '', query: '', speaker: '' }
 let searchDebounce: ReturnType<typeof setTimeout> | null = null
 
 function getVisibleTalks(): Talk[] {
   const results = filters.query.trim() ? search(filters.query) : allTalks
   return applyFilters(results, filters)
+}
+
+// --- Speaker filter ---
+
+function setSpeaker(name: string): void {
+  filters.speaker = name
+  update()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// --- Speaker chip in results bar ---
+
+function renderSpeakerChip(): void {
+  const header = document.getElementById('results-header')!
+  const existing = header.querySelector('.speaker-chip')
+  if (existing) existing.remove()
+
+  if (!filters.speaker) return
+
+  const chip = document.createElement('span')
+  chip.className = 'speaker-chip'
+  chip.innerHTML = `
+    <span class="speaker-chip-name">${escapeHtml(filters.speaker)}</span>
+    <button class="speaker-chip-clear" aria-label="Clear speaker filter">×</button>
+  `
+  chip.querySelector('.speaker-chip-clear')!.addEventListener('click', () => {
+    filters.speaker = ''
+    update()
+  })
+
+  // Insert after results-count
+  const count = header.querySelector('.results-count')!
+  count.after(chip)
 }
 
 // --- Share link (URL hash) ---
@@ -150,6 +196,7 @@ function syncHash(): void {
   if (filters.query) params.set('q', filters.query)
   if (filters.year !== 'all') params.set('year', String(filters.year))
   if (filters.track) params.set('track', filters.track)
+  if (filters.speaker) params.set('speaker', filters.speaker)
   const hash = params.toString()
   history.replaceState(null, '', hash ? '#' + hash : location.pathname)
 }
@@ -177,16 +224,17 @@ function restoreFromHash(
   }
 
   const track = params.get('track')
-  if (track) {
-    filters.track = track
-    trackFilter.value = track
-  }
+  if (track) { filters.track = track; trackFilter.value = track }
+
+  const speaker = params.get('speaker')
+  if (speaker) filters.speaker = speaker
 }
 
 // ---
 
 function update(): void {
   renderGrid(getVisibleTalks())
+  renderSpeakerChip()
   const clearBtn = document.getElementById('clear-filters')!
   clearBtn.style.display = hasActiveFilters(filters) ? 'inline-block' : 'none'
   syncHash()
@@ -222,7 +270,6 @@ async function init(): Promise<void> {
   const yearFilters = document.getElementById('year-filters')!
   const clearBtn = document.getElementById('clear-filters')!
 
-  // Restore state from URL hash before first render
   restoreFromHash(searchInput, trackFilter, yearFilters)
   update()
 
@@ -252,19 +299,12 @@ async function init(): Promise<void> {
     update()
   })
 
-  // Clear filters
-  // Shuffle / random talk
-  document.getElementById('shuffle-btn')!.addEventListener('click', () => {
-    const visible = getVisibleTalks()
-    if (visible.length === 0) return
-    const talk = visible[Math.floor(Math.random() * visible.length)]!
-    openPlayer(talk)
-  })
-
+  // Clear all filters
   clearBtn.addEventListener('click', () => {
     filters.year = 'all'
     filters.track = ''
     filters.query = ''
+    filters.speaker = ''
     searchInput.value = ''
     trackFilter.value = ''
     yearFilters.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'))
@@ -272,6 +312,18 @@ async function init(): Promise<void> {
     update()
   })
 
+  // Shuffle
+  document.getElementById('shuffle-btn')!.addEventListener('click', () => {
+    const visible = getVisibleTalks()
+    if (visible.length === 0) return
+    const talk = visible[Math.floor(Math.random() * visible.length)]!
+    openPlayer(talk)
+  })
+
+  // Speaker filter from player modal
+  document.addEventListener('fosdemflix:speaker', (e) => {
+    setSpeaker((e as CustomEvent<string>).detail)
+  })
 }
 
 init().catch(err => {

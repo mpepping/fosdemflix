@@ -132,6 +132,19 @@
   font-weight: 500;
 }
 
+.modal-speakers .speaker-link {
+  color: var(--text-secondary);
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.modal-speakers .speaker-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .modal-abstract {
   font-size: 0.875rem;
   color: var(--text-muted);

@@ -36,7 +36,9 @@ export function openPlayer(talk: Talk): void {
   const videoUrl = talk.videoMp4 ?? talk.videoWebm ?? ''
 
   const speakersHtml = talk.speakers.length
-    ? `<p class="modal-speakers">${escapeHtml(talk.speakers.join(', '))}</p>`
+    ? `<p class="modal-speakers">${talk.speakers.map(s =>
+        `<button class="speaker-link" data-speaker="${escapeHtml(s)}">${escapeHtml(s)}</button>`
+      ).join(', ')}</p>`
     : ''
 
   const abstractHtml = talk.abstract
@@ -99,6 +101,14 @@ export function initPlayer(): void {
         btn.classList.remove('copied')
       }, 2000)
     })
+  })
+
+  // Speaker link — close player and filter by speaker
+  modalInfo.addEventListener('click', e => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('.speaker-link')
+    if (!btn) return
+    closePlayer()
+    document.dispatchEvent(new CustomEvent('fosdemflix:speaker', { detail: btn.dataset.speaker }))
   })
 }
 
