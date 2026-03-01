@@ -180,7 +180,8 @@
   color: #fff;
 }
 
-.copy-url-btn.copied {
+.copy-url-btn.copied,
+.watchlist-btn.saved {
   background: #27ae60;
   border-color: #27ae60;
   color: #fff;

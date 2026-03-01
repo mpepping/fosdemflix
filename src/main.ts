@@ -7,6 +7,7 @@ import type { Talk, FilterState } from './types.ts'
 import { buildIndex, search } from './search.ts'
 import { applyFilters, getUniqueTracks, hasActiveFilters } from './filters.ts'
 import { openPlayer, initPlayer } from './player.ts'
+import { getWatchlist } from './watchlist.ts'
 
 // Track color map
 const TRACK_COLORS: Record<string, string> = {
@@ -58,7 +59,7 @@ function renderSpeakers(speakers: string[]): string {
   ).join(', ')
 }
 
-function renderCard(talk: Talk): string {
+function renderCard(talk: Talk, watchlist: Set<string>): string {
   const color = getTrackColor(talk.track)
   const speakers = talk.speakers.length
     ? `<p class="card-speakers">${renderSpeakers(talk.speakers)}</p>`
@@ -66,9 +67,10 @@ function renderCard(talk: Talk): string {
   const abstract = talk.abstract
     ? `<p class="card-abstract">${escapeHtml(talk.abstract.slice(0, 140))}…</p>`
     : ''
+  const bookmarked = watchlist.has(talk.id)
 
   return `
-    <article class="video-card" data-id="${escapeHtml(talk.id)}" role="button" tabindex="0" aria-label="Watch: ${escapeHtml(talk.title)}">
+    <article class="video-card${bookmarked ? ' in-watchlist' : ''}" data-id="${escapeHtml(talk.id)}" role="button" tabindex="0" aria-label="Watch: ${escapeHtml(talk.title)}">
       <div class="card-track-band" style="background:${color}">
         <span class="card-track-name">${escapeHtml(talk.track)}</span>
       </div>
@@ -82,6 +84,11 @@ function renderCard(talk: Talk): string {
         <span class="card-room">${escapeHtml(talk.room)}</span>
         <span class="card-play-icon">▶</span>
       </div>
+      <span class="card-bookmark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+      </span>
     </article>
   `
 }
@@ -89,6 +96,7 @@ function renderCard(talk: Talk): string {
 function renderGrid(talks: Talk[]): void {
   const grid = document.getElementById('video-grid')!
   const countEl = document.getElementById('results-count')!
+  const watchlist = getWatchlist()
 
   if (talks.length === 0) {
     grid.innerHTML = `
@@ -98,7 +106,7 @@ function renderGrid(talks: Talk[]): void {
       </div>
     `
   } else {
-    grid.innerHTML = talks.map(renderCard).join('')
+    grid.innerHTML = talks.map(t => renderCard(t, watchlist)).join('')
 
     // Delegated click handler for cards and speaker links
     grid.addEventListener('click', e => {
@@ -148,7 +156,7 @@ function renderGrid(talks: Talk[]): void {
 // Global state
 let allTalks: Talk[] = []
 const talkMap = new Map<string, Talk>()
-const filters: FilterState = { year: 'all', track: '', query: '', speaker: '' }
+const filters: FilterState = { year: 'all', track: '', query: '', speaker: '', watchlistOnly: false }
 let searchDebounce: ReturnType<typeof setTimeout> | null = null
 
 function getVisibleTalks(): Talk[] {
@@ -237,6 +245,9 @@ function update(): void {
   renderSpeakerChip()
   const clearBtn = document.getElementById('clear-filters')!
   clearBtn.style.display = hasActiveFilters(filters) ? 'inline-block' : 'none'
+  const watchlistBtn = document.getElementById('watchlist-filter-btn')!
+  watchlistBtn.classList.toggle('active', filters.watchlistOnly)
+  watchlistBtn.setAttribute('aria-pressed', String(filters.watchlistOnly))
   syncHash()
 }
 
@@ -299,12 +310,19 @@ async function init(): Promise<void> {
     update()
   })
 
+  // Watchlist filter toggle
+  document.getElementById('watchlist-filter-btn')!.addEventListener('click', () => {
+    filters.watchlistOnly = !filters.watchlistOnly
+    update()
+  })
+
   // Clear all filters
   clearBtn.addEventListener('click', () => {
     filters.year = 'all'
     filters.track = ''
     filters.query = ''
     filters.speaker = ''
+    filters.watchlistOnly = false
     searchInput.value = ''
     trackFilter.value = ''
     yearFilters.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'))
@@ -323,6 +341,15 @@ async function init(): Promise<void> {
   // Speaker filter from player modal
   document.addEventListener('fosdemflix:speaker', (e) => {
     setSpeaker((e as CustomEvent<string>).detail)
+  })
+
+  // Watchlist change from player modal — update bookmark icon on the card
+  document.addEventListener('fosdemflix:watchlist-change', (e) => {
+    const { id, inList } = (e as CustomEvent<{ id: string; inList: boolean }>).detail
+    const card = document.querySelector<HTMLElement>(`.video-card[data-id="${CSS.escape(id)}"]`)
+    if (card) card.classList.toggle('in-watchlist', inList)
+    // If watchlist filter is active, re-render so removed items disappear
+    if (filters.watchlistOnly) update()
   })
 }
 
