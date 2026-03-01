@@ -20,4 +20,5 @@ export interface FilterState {
   track: string
   query: string
   speaker: string
+  watchlistOnly: boolean
 }

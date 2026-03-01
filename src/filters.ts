@@ -1,10 +1,13 @@
 import type { FilterState, Talk } from './types.ts'
+import { getWatchlist } from './watchlist.ts'
 
 export function applyFilters(talks: Talk[], filters: FilterState): Talk[] {
+  const watchlist = filters.watchlistOnly ? getWatchlist() : null
   return talks.filter(talk => {
     if (filters.year !== 'all' && talk.year !== filters.year) return false
     if (filters.track && talk.track !== filters.track) return false
     if (filters.speaker && !talk.speakers.includes(filters.speaker)) return false
+    if (watchlist && !watchlist.has(talk.id)) return false
     return true
   })
 }
@@ -15,5 +18,5 @@ export function getUniqueTracks(talks: Talk[]): string[] {
 }
 
 export function hasActiveFilters(filters: FilterState): boolean {
-  return filters.year !== 'all' || filters.track !== '' || filters.query !== '' || filters.speaker !== ''
+  return filters.year !== 'all' || filters.track !== '' || filters.query !== '' || filters.speaker !== '' || filters.watchlistOnly
 }

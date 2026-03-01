@@ -1,4 +1,5 @@
 import type { Talk } from './types.ts'
+import { toggleWatchlist, isInWatchlist } from './watchlist.ts'
 
 const overlay = document.getElementById('modal-overlay') as HTMLElement
 const video = document.getElementById('modal-video') as HTMLVideoElement
@@ -34,6 +35,7 @@ export function openPlayer(talk: Talk): void {
   video.load()
 
   const videoUrl = talk.videoMp4 ?? talk.videoWebm ?? ''
+  const inList = isInWatchlist(talk.id)
 
   const speakersHtml = talk.speakers.length
     ? `<p class="modal-speakers">${talk.speakers.map(s =>
@@ -48,6 +50,9 @@ export function openPlayer(talk: Talk): void {
   const actions = `<div class="modal-actions">
     ${talk.talkUrl ? `<a href="${escapeHtml(talk.talkUrl)}" target="_blank" rel="noopener noreferrer" class="modal-link">View on FOSDEM →</a>` : ''}
     ${videoUrl ? `<button class="modal-link copy-url-btn" data-url="${escapeHtml(videoUrl)}">Copy video link</button>` : ''}
+    <button class="modal-link watchlist-btn${inList ? ' saved' : ''}" data-id="${escapeHtml(talk.id)}">
+      ${inList ? '✓ Saved' : '+ Watchlist'}
+    </button>
   </div>`
 
   modalInfo.innerHTML = `
@@ -87,7 +92,7 @@ export function initPlayer(): void {
     if (e.key === 'Escape' && overlay.classList.contains('active')) closePlayer()
   })
 
-  // Copy video URL — delegated on modalInfo
+  // Copy video URL
   modalInfo.addEventListener('click', e => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.copy-url-btn')
     if (!btn) return
@@ -101,6 +106,17 @@ export function initPlayer(): void {
         btn.classList.remove('copied')
       }, 2000)
     })
+  })
+
+  // Watchlist toggle
+  modalInfo.addEventListener('click', e => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('.watchlist-btn')
+    if (!btn) return
+    const id = btn.dataset.id!
+    const inList = toggleWatchlist(id)
+    btn.textContent = inList ? '✓ Saved' : '+ Watchlist'
+    btn.classList.toggle('saved', inList)
+    document.dispatchEvent(new CustomEvent('fosdemflix:watchlist-change', { detail: { id, inList } }))
   })
 
   // Speaker link — close player and filter by speaker

@@ -117,6 +117,34 @@
 }
 
 
+/* Watchlist filter button */
+.watchlist-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.watchlist-filter-btn:hover {
+  background: rgba(255,255,255,0.14);
+  color: var(--text);
+}
+
+.watchlist-filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 /* Shuffle button */
 .shuffle-btn {
   flex-shrink: 0;
