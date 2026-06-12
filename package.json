@@ -14,8 +14,8 @@
     "minisearch": "^7.1.0"
   },
   "devDependencies": {
-    "tsx": "^4.19.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.7.0",
-    "vite": "^6.4.2"
+    "vite": "^8.0.16"
   }
 }
